@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bileşik Detay</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f;--panel:#12121a;--panel2:#1a1a26;--border:#1e1e2e;
+  --text:#e8e8f0;--dim:#5a5a7a;--accent:#00d4ff;--glow:rgba(0,212,255,.15);
+  --green:#00ff88;--yellow:#ffe600;--orange:#ff6600;--red:#ff4d6d;--purple:#b06aff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:40px 20px;}
+
+/* Başlık */
+header{text-align:center;margin-bottom:40px;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);letter-spacing:.15em;
+  color:#ff00cc;text-shadow:0 0 40px rgba(255,0,204,.5),0 0 80px rgba(255,0,204,.2);margin-bottom:6px;}
+.subtitle{font-size:.6rem;color:var(--dim);letter-spacing:.25em;text-transform:uppercase;}
+
+/* Giriş */
+.input-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:24px;margin-bottom:20px;position:relative;overflow:hidden;}
+.input-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.input-label{font-size:.55rem;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;display:block;}
+.input-row{display:flex;gap:8px;}
+#inp{flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:3px;
+  color:var(--text);font-family:'Space Mono',monospace;font-size:.85rem;padding:11px 14px;outline:none;
+  transition:border-color .2s,box-shadow .2s;}
+#inp:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--glow);}
+#inp::placeholder{color:var(--dim);}
+#btn-go{background:var(--accent);color:#000;border:none;border-radius:3px;
+  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;
+  padding:11px 22px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+#btn-go:hover{background:#00eeff;box-shadow:0 0 20px rgba(0,212,255,.4);}
+#btn-x{background:none;color:var(--dim);border:1px solid var(--border);border-radius:3px;
+  font-size:.65rem;padding:11px 13px;cursor:pointer;transition:all .2s;}
+#btn-x:hover{border-color:var(--red);color:var(--red);}
+
+/* Hata */
+#err{background:rgba(255,77,109,.06);border:1px solid rgba(255,77,109,.3);border-radius:6px;
+  padding:18px 22px;display:none;animation:fadeIn .3s;}
+.err-t{font-size:.52rem;color:var(--red);letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px;}
+.err-m{font-size:.68rem;color:var(--text);line-height:1.7;}
+
+/* Sonuç */
+#res{background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:24px;display:none;animation:fadeIn .3s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.res-tur{font-size:.5rem;color:var(--dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;}
+.res-ana{font-family:'Bebas Neue',sans-serif;font-size:2.3rem;letter-spacing:.06em;
+  color:var(--green);text-shadow:0 0 20px rgba(0,255,136,.3);margin-bottom:6px;word-break:break-all;line-height:1.1;}
+.res-alt{font-size:.63rem;color:var(--dim);line-height:1.8;margin-bottom:14px;}
+.res-alt b{color:var(--text);}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+
+/* Grid'ler */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:7px;}
+@media(max-width:580px){.grid2{grid-template-columns:1fr;}.grid3{grid-template-columns:1fr 1fr;}}
+.kart{background:var(--panel2);border-radius:3px;padding:9px 11px;border:1px solid var(--border);}
+.kart-k{font-size:.44rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px;}
+.kart-v{font-size:.65rem;color:var(--text);font-weight:700;line-height:1.4;}
+.kart-v.g{color:var(--green);}
+.kart-v.y{color:var(--yellow);}
+.kart-v.o{color:var(--orange);}
+.kart-v.r{color:var(--red);}
+.kart-v.p{color:var(--purple);}
+
+/* Bölüm başlığı */
+.bolum{font-size:.48rem;color:var(--purple);letter-spacing:.2em;text-transform:uppercase;
+  margin:14px 0 6px;border-top:1px solid var(--border);padding-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>BİLEŞİK DETAY</h1>
+    <p class="subtitle">Formül &rarr; İsim &nbsp;&middot;&nbsp; İsim &rarr; Formül &nbsp;&middot;&nbsp; Özellikler</p>
+  </header>
+
+  <div class="input-card">
+    <label class="input-label" for="inp">Formül veya Bileşik Adı Girin</label>
+    <div class="input-row">
+      <input type="text" id="inp" placeholder="Formül veya bileşik adı..." autocomplete="off" spellcheck="false">
+      <button id="btn-go" onclick="cevir()">DÖNÜŞTÜR</button>
+      <button id="btn-x" onclick="temizle()">✕</button>
+    </div>
+  </div>
+
+  <div id="err">
+    <div class="err-t">&#9888; Tanınamadı</div>
+    <div class="err-m" id="err-m"></div>
+  </div>
+
+  <div id="res">
+    <div class="res-tur" id="res-tur"></div>
+    <div class="res-ana" id="res-ana"></div>
+    <div class="res-alt" id="res-alt"></div>
+    <div class="divider"></div>
+    <div class="grid2" id="grid-temel"></div>
+    <div class="bolum" id="bolum-hesap" style="display:none">⚗ Hesaplanan Özellikler</div>
+    <div class="grid3" id="grid-hesap"></div>
+    <div class="bolum" id="bolum-db" style="display:none">📋 Veritabanı Bilgileri</div>
+    <div class="grid3" id="grid-db"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════
+// ELEMENT VERİTABANI
+// ══════════════════════════════════════════
+const EL = {
+  H:{ad:'Hidrojen',yuks:[-1,1],tur:'ametal',kutle:1.008},
+  He:{ad:'Helyum',yuks:[0],tur:'soy gaz',kutle:4.003},
+  Li:{ad:'Lityum',yuks:[1],tur:'alkali metal',kutle:6.94},
+  Be:{ad:'Berilyum',yuks:[2],tur:'toprak alkali',kutle:9.012},
+  B:{ad:'Bor',yuks:[3],tur:'yari metal',kutle:10.81},
+  C:{ad:'Karbon',yuks:[-4,2,4],tur:'ametal',kutle:12.011},
+  N:{ad:'Azot',yuks:[-3,1,2,3,4,5],tur:'ametal',kutle:14.007},
+  O:{ad:'Oksijen',yuks:[-2,-1],tur:'ametal',kutle:15.999},
+  F:{ad:'Flor',yuks:[-1],tur:'halojen',kutle:18.998},
+  Ne:{ad:'Neon',yuks:[0],tur:'soy gaz',kutle:20.18},
+  Na:{ad:'Sodyum',yuks:[1],tur:'alkali metal',kutle:22.99},
+  Mg:{ad:'Magnezyum',yuks:[2],tur:'toprak alkali',kutle:24.305},
+  Al:{ad:'Alüminyum',yuks:[3],tur:'metal',kutle:26.982},
+  Si:{ad:'Silisyum',yuks:[-4,4],tur:'yari metal',kutle:28.085},
+  P:{ad:'Fosfor',yuks:[-3,1,3,5],tur:'ametal',kutle:30.974},
+  S:{ad:'Kükürt',yuks:[-2,2,4,6],tur:'ametal',kutle:32.06},
+  Cl:{ad:'Klor',yuks:[-1,1,3,5,7],tur:'halojen',kutle:35.45},
+  Ar:{ad:'Argon',yuks:[0],tur:'soy gaz',kutle:39.948},
+  K:{ad:'Potasyum',yuks:[1],tur:'alkali metal',kutle:39.098},
+  Ca:{ad:'Kalsiyum',yuks:[2],tur:'toprak alkali',kutle:40.078},
+  Sc:{ad:'Skandiyum',yuks:[3],tur:'gecis metali',kutle:44.956},
+  Ti:{ad:'Titanyum',yuks:[2,3,4],tur:'gecis metali',kutle:47.867},
+  V:{ad:'Vanadyum',yuks:[2,3,4,5],tur:'gecis metali',kutle:50.942},
+  Cr:{ad:'Krom',yuks:[2,3,6],tur:'gecis metali',kutle:51.996},
+  Mn:{ad:'Mangan',yuks:[2,3,4,6,7],tur:'gecis metali',kutle:54.938},
+  Fe:{ad:'Demir',yuks:[2,3],tur:'gecis metali',kutle:55.845},
+  Co:{ad:'Kobalt',yuks:[2,3],tur:'gecis metali',kutle:58.933},
+  Ni:{ad:'Nikel',yuks:[2,3],tur:'gecis metali',kutle:58.693},
+  Cu:{ad:'Bakır',yuks:[1,2],tur:'gecis metali',kutle:63.546},
+  Zn:{ad:'Çinko',yuks:[2],tur:'gecis metali',kutle:65.38},
+  Ga:{ad:'Galyum',yuks:[3],tur:'metal',kutle:69.723},
+  Ge:{ad:'Germanyum',yuks:[2,4],tur:'yari metal',kutle:72.63},
+  As:{ad:'Arsenik',yuks:[-3,3,5],tur:'yari metal',kutle:74.922},
+  Se:{ad:'Selenyum',yuks:[-2,2,4,6],tur:'ametal',kutle:78.971},
+  Br:{ad:'Brom',yuks:[-1,1,3,5],tur:'halojen',kutle:79.904},
+  Kr:{ad:'Kripton',yuks:[0,2],tur:'soy gaz',kutle:83.798},
+  Rb:{ad:'Rubidyum',yuks:[1],tur:'alkali metal',kutle:85.468},
+  Sr:{ad:'Stronsiyum',yuks:[2],tur:'toprak alkali',kutle:87.62},
+  Ag:{ad:'Gümüş',yuks:[1],tur:'gecis metali',kutle:107.868},
+  Cd:{ad:'Kadmiyum',yuks:[2],tur:'gecis metali',kutle:112.411},
+  Sn:{ad:'Kalay',yuks:[2,4],tur:'metal',kutle:118.71},
+  Sb:{ad:'Antimon',yuks:[-3,3,5],tur:'yari metal',kutle:121.76},
+  I:{ad:'İyot',yuks:[-1,1,3,5,7],tur:'halojen',kutle:126.904},
+  Ba:{ad:'Baryum',yuks:[2],tur:'toprak alkali',kutle:137.327},
+  W:{ad:'Wolfram',yuks:[2,4,6],tur:'gecis metali',kutle:183.84},
+  Hg:{ad:'Cıva',yuks:[1,2],tur:'gecis metali',kutle:200.592},
+  Pb:{ad:'Kurşun',yuks:[2,4],tur:'metal',kutle:207.2},
+  Bi:{ad:'Bizmut',yuks:[3,5],tur:'metal',kutle:208.98},
+  // Lantanitler
+  La:{ad:'Lantan',yuks:[3],tur:'lantanit',kutle:138.905},
+  Ce:{ad:'Seryum',yuks:[3,4],tur:'lantanit',kutle:140.116},
+  Nd:{ad:'Neodimyum',yuks:[3],tur:'lantanit',kutle:144.242},
+  Sm:{ad:'Samaryum',yuks:[2,3],tur:'lantanit',kutle:150.36},
+  Eu:{ad:'Europiyum',yuks:[2,3],tur:'lantanit',kutle:151.964},
+  Gd:{ad:'Gadolinyum',yuks:[3],tur:'lantanit',kutle:157.25},
+  // Aktinitlerin önemlileri
+  Th:{ad:'Toryum',yuks:[4],tur:'aktinit',kutle:232.038},
+  U:{ad:'Uranyum',yuks:[3,4,5,6],tur:'aktinit',kutle:238.029},
+  Np:{ad:'Neptünyum',yuks:[3,4,5,6],tur:'aktinit',kutle:237.0},
+  Pu:{ad:'Plütonyum',yuks:[3,4,5,6],tur:'aktinit',kutle:244.0},
+  Am:{ad:'Amerisyum',yuks:[3,4,5,6],tur:'aktinit',kutle:243.0},
+};
+
+// İsim → sembol haritası
+const AD = {};
+Object.entries(EL).forEach(([s,d]) => { AD[d.ad.toLowerCase()] = s; });
+// Ek yazım varyantları
+const AD_EK = {
+  'aluminyum':'Al','alüminyum':'Al','kükürt':'S','kukurt':'S','çinko':'Zn',
+  'cinko':'Zn','bakir':'Cu','bakır':'Cu','gumus':'Ag','gümüş':'Ag',
+  'civa':'Hg','cıva':'Hg','kursun':'Pb','kurşun':'Pb','iyot':'I',
+};
+// Yeni elementlerin Türkçe adlarını AD haritasına ekle (otomatik — forEach zaten yapıyor)
+// Ama büyük/küçük harf sorununu çözmek için girişi küçük harfe çevirme güncellendi
+Object.assign(AD, AD_EK);
+
+// ══════════════════════════════════════════
+// ANYON VERİTABANI
+// ══════════════════════════════════════════
+// Tek atomlu anyonlar: sembol → {ad, yuk}
+const ANYON1 = {
+  H:{ad:'hidrür',yuk:-1}, F:{ad:'florür',yuk:-1}, Cl:{ad:'klorür',yuk:-1},
+  Br:{ad:'bromür',yuk:-1}, I:{ad:'iyodür',yuk:-1}, C:{ad:'karbür',yuk:-4},
+  N:{ad:'nitrür',yuk:-3}, O:{ad:'oksit',yuk:-2}, O2:{ad:'peroksit',yuk:-2},
+  P:{ad:'fosfür',yuk:-3}, S:{ad:'sülfür',yuk:-2}, Se:{ad:'selenyür',yuk:-2},
+  As:{ad:'arsenür',yuk:-3},
+};
+
+// Poliatomik sembol → ad (formül → isim için, yük ile belirsizlik çözülür)
+const ANYON_P_SYM = {
+  'OH':'hidroksit','CO3':'karbonat','HCO3':'bikarbonat',
+  'NO3':'nitrat','NO2':'nitrit','CN':'siyanür','CNO':'siynat',
+  'ClO':'hipoklorit','ClO2':'klorit','ClO3':'klorat','ClO4':'perklorat',
+  'BrO2':'bromit','BrO3':'bromat','BrO4':'perbromat','IO3':'iyodat',
+  'PO3':'fosfit','PO4':'fosfat','SO3':'sülfit','SO4':'sülfat',
+  'S2O3':'tiyosülfat','SCN':'tiyosiyanat',
+  'CrO4':'kromat','Cr2O7':'dikromat',
+  'MnO4':'permanganat', // yük -1; manganat (-2) daha nadir
+  'CH3COO':'asetat','HCOO':'formiyat','C2O4':'oksalat',
+  'SiO3':'silikat','SiO4':'metasilikat','Al2O4':'alüminat',
+};
+
+// Poliatomik anyonlar: ad → {sembol, yuk}
+const ANYON_P = {
+  'hidroksit':{s:'OH',yuk:-1},
+  'karbonat':{s:'CO3',yuk:-2}, 'bikarbonat':{s:'HCO3',yuk:-1},
+  'nitrat':{s:'NO3',yuk:-1}, 'nitrit':{s:'NO2',yuk:-1},
+  'siyanür':{s:'CN',yuk:-1}, 'siynat':{s:'CNO',yuk:-1},
+  'hipoklorit':{s:'ClO',yuk:-1}, 'klorit':{s:'ClO2',yuk:-1},
+  'klorat':{s:'ClO3',yuk:-1}, 'perklorat':{s:'ClO4',yuk:-1},
+  'bromit':{s:'BrO2',yuk:-1}, 'bromat':{s:'BrO3',yuk:-1},
+  'perbromat':{s:'BrO4',yuk:-1}, 'iyodat':{s:'IO3',yuk:-1},
+  'fosfit':{s:'PO3',yuk:-3}, 'fosfat':{s:'PO4',yuk:-3},
+  'sülfit':{s:'SO3',yuk:-2}, 'sülfat':{s:'SO4',yuk:-2},
+  'tiyosülfat':{s:'S2O3',yuk:-2}, 'tiyosiyanat':{s:'SCN',yuk:-1},
+  'kromat':{s:'CrO4',yuk:-2}, 'dikromat':{s:'Cr2O7',yuk:-2},
+  'manganat':{s:'MnO4',yuk:-2}, 'permanganat':{s:'MnO4',yuk:-1},
+  'asetat':{s:'CH3COO',yuk:-1}, 'formiyat':{s:'HCOO',yuk:-1},
+  'oksalat':{s:'C2O4',yuk:-2}, 'okzalat':{s:'C2O4',yuk:-2},
+  'silikat':{s:'SiO3',yuk:-2}, 'metasilikat':{s:'SiO4',yuk:-4},
+  'alüminat':{s:'Al2O4',yuk:-2}, 'benzoat':{s:'C6H5COO',yuk:-1},
+};
+
+// ══════════════════════════════════════════
+// BİLİNEN ASİTLER
+// ══════════════════════════════════════════
+const ASIT_F = {
+  'HCl':{isim:'Hidroklorik asit',alt:'Klorhidrik asit',tur:'Kuvvetli asit'},
+  'HBr':{isim:'Hidrobrorik asit',alt:'',tur:'Kuvvetli asit'},
+  'HI':{isim:'Hidroiyodik asit',alt:'',tur:'Kuvvetli asit'},
+  'HF':{isim:'Hidroflorik asit',alt:'',tur:'Zayıf asit'},
+  'H2S':{isim:'Hidrosülfürik asit',alt:'Hidrojen sülfür',tur:'Zayıf asit'},
+  'H2SO4':{isim:'Sülfürik asit',alt:'',tur:'Kuvvetli asit'},
+  'H2SO3':{isim:'Sülfüroz asit',alt:'',tur:'Zayıf asit'},
+  'HNO3':{isim:'Nitrik asit',alt:'',tur:'Kuvvetli asit'},
+  'HNO2':{isim:'Nitroz asit',alt:'',tur:'Zayıf asit'},
+  'H3PO4':{isim:'Fosforik asit',alt:'',tur:'Orta kuvvetli asit'},
+  'H3PO3':{isim:'Fosforoz asit',alt:'',tur:'Zayıf asit'},
+  'H2CO3':{isim:'Karbonik asit',alt:'',tur:'Zayıf asit'},
+  'HClO4':{isim:'Perklorik asit',alt:'',tur:'Kuvvetli asit'},
+  'HClO3':{isim:'Klorik asit',alt:'',tur:'Orta kuvvetli asit'},
+  'HClO2':{isim:'Kloroz asit',alt:'',tur:'Zayıf asit'},
+  'HClO':{isim:'Hipokloroz asit',alt:'',tur:'Zayıf asit'},
+  'H2CrO4':{isim:'Kromik asit',alt:'',tur:'Kuvvetli asit'},
+  'HMnO4':{isim:'Permanganik asit',alt:'',tur:'Kuvvetli asit'},
+  'HCOOH':{isim:'Metanoik asit',alt:'Formik asit',tur:'Zayıf organik asit'},
+  'CH3COOH':{isim:'Etanoik asit',alt:'Asetik asit',tur:'Zayıf organik asit'},
+  'C2H5COOH':{isim:'Propanoik asit',alt:'',tur:'Zayıf organik asit'},
+  'C3H7COOH':{isim:'Bütanoik asit',alt:'',tur:'Zayıf organik asit'},
+};
+const ASIT_I = {};
+Object.entries(ASIT_F).forEach(([f,d]) => {
+  ASIT_I[d.isim.toLowerCase()] = f;
+  if(d.alt) ASIT_I[d.alt.toLowerCase()] = f;
+});
+
+// ══════════════════════════════════════════
+// BİLİNEN BAZLAR
+// ══════════════════════════════════════════
+const BAZ_F = {
+  'NaOH':{isim:'Sodyum hidroksit',tur:'Kuvvetli baz'},
+  'KOH':{isim:'Potasyum hidroksit',tur:'Kuvvetli baz'},
+  'LiOH':{isim:'Lityum hidroksit',tur:'Kuvvetli baz'},
+  'Ba(OH)2':{isim:'Baryum hidroksit',tur:'Kuvvetli baz'},
+  'Ca(OH)2':{isim:'Kalsiyum hidroksit',alt:'Sönmüş kireç',tur:'Orta kuvvetli baz'},
+  'Mg(OH)2':{isim:'Magnezyum hidroksit',tur:'Zayıf baz'},
+  'Al(OH)3':{isim:'Alüminyum hidroksit',tur:'Amfoter'},
+  'Fe(OH)2':{isim:'Demir(II) hidroksit',tur:'Zayıf baz'},
+  'Fe(OH)3':{isim:'Demir(III) hidroksit',tur:'Zayıf baz'},
+  'Cu(OH)2':{isim:'Bakır(II) hidroksit',tur:'Zayıf baz'},
+  'Zn(OH)2':{isim:'Çinko hidroksit',tur:'Amfoter'},
+  'NH3':{isim:'Amonyak',tur:'Zayıf baz'},
+};
+const BAZ_I = {};
+Object.entries(BAZ_F).forEach(([f,d]) => { BAZ_I[d.isim.toLowerCase()] = f; });
+
+// ══════════════════════════════════════════
+// ORGANİK VERİTABANI
+// ══════════════════════════════════════════
+const ORG_F = {
+  'CH4':'Metan','C2H6':'Etan','C3H8':'Propan','C4H10':'Bütan','C5H12':'Pentan',
+  'C6H14':'Hekzan','C7H16':'Heptan','C8H18':'Oktan','C9H20':'Nonan','C10H22':'Dekan',
+  'C2H4':'Eten','C3H6':'Propen','C4H8':'Büten','C5H10':'Penten',
+  'C2H2':'Etin','C3H4':'Propin','C4H6':'Bütin',
+  'CH3OH':'Metanol','C2H5OH':'Etanol','C3H7OH':'Propanol','C4H9OH':'Bütanol',
+  'HCHO':'Metanal','CH3CHO':'Etanal','C2H5CHO':'Propanal',
+  'CH3COCH3':'Propanon','CH3COC2H5':'Bütanon',
+  'HCOOH':'Metanoik asit','CH3COOH':'Etanoik asit',
+  'C2H5COOH':'Propanoik asit','C3H7COOH':'Bütanoik asit',
+  'HCOOCH3':'Metil metanoat','HCOOC2H5':'Etil metanoat',
+  'CH3COOCH3':'Metil etanoat','CH3COOC2H5':'Etil etanoat',
+  'CH3OCH3':'Dimetil eter','C2H5OC2H5':'Dietil eter',
+  'CH3NH2':'Metilamin','C2H5NH2':'Etilamin','(CH3)2NH':'Dimetilamin','(CH3)3N':'Trimetilamin',
+};
+// Yaygın isimler
+const ORG_YAYGIN = {
+  'formaldehit':'HCHO','asetaldehit':'CH3CHO','aseton':'CH3COCH3',
+  'etilen':'C2H4','propilen':'C3H6','asetilen':'C2H2',
+  'metil alkol':'CH3OH','etil alkol':'C2H5OH',
+  'formik asit':'HCOOH','asetik asit':'CH3COOH',
+  'metil asetat':'CH3COOCH3','etil asetat':'CH3COOC2H5',
+  'dietil eter':'C2H5OC2H5',
+};
+const ORG_I = {};
+Object.entries(ORG_F).forEach(([f,n]) => { ORG_I[n.toLowerCase()] = f; });
+Object.entries(ORG_YAYGIN).forEach(([k,f]) => { ORG_I[k] = f; });
+
+// ══════════════════════════════════════════
+// VERİTABANI BİLGİLERİ
+// ══════════════════════════════════════════
+const DB = {
+  'NaCl':{r:'Beyaz kristal',c:'Çözünür',k:'Sofra tuzu, gıda koruyucu',t:'Zararsız'},
+  'KCl':{r:'Beyaz kristal',c:'Çözünür',k:'Gübre, IV sıvı',t:'Zararsız'},
+  'NaOH':{r:'Beyaz katı',c:'Çözünür',k:'Sabun, deterjan',t:'Kostik'},
+  'KOH':{r:'Beyaz katı',c:'Çözünür',k:'Gübre, sabun yapımı',t:'Kostik'},
+  'Ca(OH)2':{r:'Beyaz toz',c:'Az çözünür',k:'İnşaat, su arıtma',t:'Tahriş edici'},
+  'CaCO3':{r:'Beyaz katı',c:'Az çözünür',k:'Çimento, kalsiyum takviyesi',t:'Zararsız'},
+  'CaCl2':{r:'Beyaz kristal',c:'Çözünür',k:'Buz eritici, nem tutucu',t:'Tahriş edici'},
+  'CaSO4':{r:'Beyaz katı',c:'Az çözünür',k:'Alçı, çimento',t:'Zararsız'},
+  'MgSO4':{r:'Beyaz kristal',c:'Çözünür',k:'İngiliz tuzu, gübre',t:'Zararsız'},
+  'NaHCO3':{r:'Beyaz toz',c:'Çözünür',k:'Kabartma tozu, antasit',t:'Zararsız'},
+  'Na2CO3':{r:'Beyaz toz',c:'Çözünür',k:'Çamaşır sodası, cam yapımı',t:'Tahriş edici'},
+  'Na2SO4':{r:'Beyaz kristal',c:'Çözünür',k:'Deterjan, kâğıt endüstrisi',t:'Zararsız'},
+  'HCl':{r:'Renksiz gaz/sıvı',c:'Çözünür',k:'Endüstriyel temizlik',t:'Aşındırıcı, zehirli'},
+  'H2SO4':{r:'Renksiz sıvı',c:'Çözünür',k:'Akü, gübre, petrol rafinerisi',t:'Aşındırıcı'},
+  'HNO3':{r:'Renksiz sıvı',c:'Çözünür',k:'Gübre, patlayıcı',t:'Aşındırıcı, oksitleyici'},
+  'H3PO4':{r:'Renksiz viskoz sıvı',c:'Çözünür',k:'Gübre, gıda katkısı E338',t:'Hafif aşındırıcı'},
+  'NH3':{r:'Renksiz gaz',c:'Çözünür',k:'Gübre, soğutucu madde',t:'Zehirli, tahriş edici'},
+  'FeCl3':{r:'Koyu kahverengi',c:'Çözünür',k:'Su arıtma, devre kartı',t:'Aşındırıcı'},
+  'CuSO4':{r:'Mavi kristal',c:'Çözünür',k:'Mantar ilacı, elektrokaplama',t:'Zehirli'},
+  'AgNO3':{r:'Renksiz kristal',c:'Çözünür',k:'Fotoğrafçılık, antiseptik',t:'Aşındırıcı, zehirli'},
+  'KMnO4':{r:'Mor kristal',c:'Çözünür',k:'Dezenfektan, su arıtma',t:'Oksitleyici'},
+  'BaSO4':{r:'Beyaz toz',c:'Çözünmez',k:'X-ray kontrast, boya',t:'Zararsız'},
+  'Fe2O3':{r:'Kırmızı-kahverengi',c:'Çözünmez',k:'Boya pigmenti, çelik',t:'Zararsız'},
+  'Al2O3':{r:'Beyaz toz',c:'Çözünmez',k:'Alüminyum üretimi, aşındırıcı',t:'Zararsız'},
+  'SiO2':{r:'Renksiz/beyaz',c:'Çözünmez',k:'Cam, kum, çimento',t:'Silikoz riski (toz)'},
+  'CO2':{r:'Renksiz gaz',c:'Çözünür',k:'Gazlı içecek, yangın söndürücü',t:'Boğucu (yüksek yoğunluk)'},
+  'SO2':{r:'Renksiz gaz',c:'Çözünür',k:'Şarap koruyucu, kâğıt ağartma',t:'Zehirli, tahriş edici'},
+  'NH4Cl':{r:'Beyaz kristal',c:'Çözünür',k:'Gübre, lehim suyu, pil',t:'Hafif tahriş edici'},
+  'CH4':{r:'Renksiz gaz',c:'Az çözünür',k:'Doğalgaz, yakıt',t:'Yanıcı, patlayıcı'},
+  'C2H5OH':{r:'Renksiz sıvı',c:'Çözünür',k:'Dezenfektan, içecek, yakıt',t:'Yanıcı'},
+  'CH3COOH':{r:'Renksiz sıvı',c:'Çözünür',k:'Sirke, solvent',t:'Tahriş edici'},
+  'CH3OH':{r:'Renksiz sıvı',c:'Çözünür',k:'Yakıt, solvent, antifiriz',t:'Zehirli (kör edici)'},
+  'HCHO':{r:'Renksiz gaz/sıvı',c:'Çözünür',k:'Dezenfektan, reçine',t:'Kanserojen, zehirli'},
+  'CH3COCH3':{r:'Renksiz sıvı',c:'Çözünür',k:'Aseton — solvent, oje çıkarıcı',t:'Yanıcı'},
+};
+
+// ══════════════════════════════════════════
+// YARDIMCI FONKSİYONLAR
+// ══════════════════════════════════════════
+function gcd(a,b){ return b===0?a:gcd(b,a%b); }
+function dengele(a,b){ const g=gcd(Math.abs(a),Math.abs(b)); return [Math.abs(b)/g, Math.abs(a)/g]; }
+function toRoman(n){ return {1:'I',2:'II',3:'III',4:'IV',5:'V',6:'VI',7:'VII',8:'VIII'}[n]||String(n); }
+function fromRoman(r){ return {i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7,viii:8}[r.toLowerCase()]||1; }
+
+function toSub(f){
+  return f.replace(/(\d+)/g, n=>[...n].map(c=>'₀₁₂₃₄₅₆₇₈₉'[+c]).join(''));
+}
+function normF(f){
+  return f.replace(/[₀₁₂₃₄₅₆₇₈₉]/g, c=>'0123456789'['₀₁₂₃₄₅₆₇₈₉'.indexOf(c)]).trim();
+}
+
+// Parantez açma: Al2(SO4)3 → Al2SO4SO4SO4  (max 10 iterasyon)
+function parantezAc(f){
+  for(let i=0;i<10;i++){
+    const y = f.replace(/\(([^()]+)\)(\d+)/g, (m,ic,n)=>ic.repeat(Math.min(+n,8)));
+    if(y===f) break;
+    f=y;
+  }
+  return f;
+}
+
+// Mol kütlesi hesabı
+function molKutle(f){
+  if(!f || f.length>60) return null;
+  f = normF(f);
+  f = parantezAc(f);
+  if(f.length>300) return null;
+  let total=0;
+  const re=/([A-Z][a-z]?)(\d*)/g;
+  let m;
+  while((m=re.exec(f))!==null){
+    const el=EL[m[1]];
+    if(el) total += el.kutle * (parseInt(m[2]||'1'));
+  }
+  return total>0 ? total.toFixed(2) : null;
+}
+
+// Organik bileşik türü
+function orgTur(f){
+  if(f.includes('NH')) return 'Amin';
+  if(f.includes('COOH')||f==='HCOOH') return 'Karboksilik Asit';
+  if(f.includes('COO')) return 'Ester';
+  if(f.includes('CHO')||f==='HCHO') return 'Aldehit';
+  if(f.includes('CO')&&!f.includes('COOH')&&!f.includes('COO')) return 'Keton';
+  if(f.includes('OH')) return 'Alkol';
+  if(f.includes('O')&&!f.includes('OH')) return 'Eter';
+  const c=parseInt((f.match(/C(\d*)/)||[,'1'])[1]||'1');
+  const h=parseInt((f.match(/H(\d+)/)||[,'0'])[1]);
+  if(h===2*c+2) return 'Alkan';
+  if(h===2*c) return 'Alken';
+  if(h===2*c-2) return 'Alkin';
+  return 'Organik Bileşik';
+}
+
+// Asit-baz tahmini
+const KUV_BAZ_MET = new Set(['Na','K','Li','Rb','Cs','Ca','Sr','Ba']);
+const KUV_ASIT_ANY = new Set(['Cl','Br','I','NO3','ClO4','ClO3']);
+const ZAYIF_ASIT_ANY = new Set(['CH3COO','HCOO','CN','CO3','HCO3','SO3','PO4','F','NO2','C2O4']);
+
+function asitBazTahmini(metSym, anySym){
+  const km = KUV_BAZ_MET.has(metSym);
+  const ka = KUV_ASIT_ANY.has(anySym);
+  const za = ZAYIF_ASIT_ANY.has(anySym);
+  if(km && ka)  return {v:'Nötr (pH ≈ 7)',cls:'g'};
+  if(km && za)  return {v:'Bazik (pH > 7)',cls:'g'};
+  if(!km && ka) return {v:'Asidik (pH < 7)',cls:'o'};
+  if(!km && za) return {v:'Zayıf asidik/bazik',cls:'y'};
+  return null;
+}
+
+// ══════════════════════════════════════════
+// ANA DÖNÜŞTÜRÜCÜ
+// ══════════════════════════════════════════
+function cevir(){
+  const raw = document.getElementById('inp').value.trim();
+  if(!raw){ hata('Lütfen bir formül veya bileşik adı girin.'); return; }
+
+  let r = null;
+
+  const nf = normF(raw);
+
+  // 1. Organik — formül
+  if(!r && ORG_F[nf]){
+    const isim = ORG_F[nf];
+    r = {tur:'Formül → İsim · Organik', ana:isim, alt:`Formül: <b>${toSub(nf)}</b>`,
+      formul:nf,
+      det:[{k:'Tür',v:orgTur(nf)},{k:'Formül',v:toSub(nf)},{k:'İsim',v:isim}]};
+  }
+
+  // 2. Organik — isim
+  if(!r){
+    const key = raw.toLowerCase().trim();
+    const f = ORG_I[key];
+    if(f){
+      r = {tur:'İsim → Formül · Organik', ana:toSub(f), alt:`İsim: <b>${ORG_F[f]}</b>`,
+        formul:f,
+        det:[{k:'Tür',v:orgTur(f)},{k:'Formül',v:toSub(f)},{k:'İsim',v:ORG_F[f]}]};
+    }
+  }
+
+  // 3. Asit — formül
+  if(!r && ASIT_F[nf]){
+    const a = ASIT_F[nf];
+    r = {tur:'Formül → İsim · Asit', ana:a.isim+(a.alt?` (${a.alt})`:''),
+      alt:`Formül: <b>${toSub(nf)}</b>`, formul:nf,
+      det:[{k:'Tür',v:a.tur},{k:'Formül',v:toSub(nf)},{k:'İsim',v:a.isim}]};
+  }
+
+  // 4. Asit — isim
+  if(!r){
+    const key = raw.toLowerCase().replace(/asiti$/,'asit').trim();
+    for(const [f,a] of Object.entries(ASIT_F)){
+      if(a.isim.toLowerCase()===key||(a.alt&&a.alt.toLowerCase()===key)){
+        r = {tur:'İsim → Formül · Asit', ana:toSub(f), alt:`İsim: <b>${a.isim}</b>`,
+          formul:f,
+          det:[{k:'Tür',v:a.tur},{k:'Formül',v:toSub(f)},{k:'İsim',v:a.isim}]};
+        break;
+      }
+    }
+  }
+
+  // 5. Baz — formül
+  if(!r && BAZ_F[nf]){
+    const b = BAZ_F[nf];
+    r = {tur:'Formül → İsim · Baz', ana:b.isim+(b.alt?` (${b.alt})`:''),
+      alt:`Formül: <b>${toSub(nf)}</b>`, formul:nf,
+      det:[{k:'Tür',v:b.tur},{k:'Formül',v:toSub(nf)},{k:'İsim',v:b.isim}]};
+  }
+
+  // 6. Baz — isim
+  if(!r){
+    const key = raw.toLowerCase().trim();
+    for(const [f,b] of Object.entries(BAZ_F)){
+      if(b.isim.toLowerCase()===key){
+        r = {tur:'İsim → Formül · Baz', ana:toSub(f), alt:`İsim: <b>${b.isim}</b>`,
+          formul:f,
+          det:[{k:'Tür',v:b.tur},{k:'Formül',v:toSub(f)},{k:'İsim',v:b.isim}]};
+        break;
+      }
+    }
+  }
+
+  // 7. İkili bileşik — formül (sadece gerçek formüller: harf+rakam)
+  if(!r && /^[A-Za-z0-9()]+$/.test(raw)){
+    r = formuldenIsim(nf);
+  }
+
+  // 8. İkili bileşik — isim
+  if(!r){
+    r = isimdenFormul(raw);
+  }
+
+  if(r) goster(r);
+  else hata(`"${raw}" tanınamadı.<br><br><b>Örnekler:</b> NaCl · sodyum klorür · H₂SO₄ · sülfürik asit · CH₄ · metan · demir(III) oksit · alüminyum sülfat`);
+}
+
+// ══════════════════════════════════════════
+// FORMÜL → İSİM (tam kural tabanlı)
+// ══════════════════════════════════════════
+
+// Tüm poliatomik anyon sembolleri uzundan kısaya sıralı (önce uzun eşleş)
+const POLI_SEMBOLLER = Object.keys(ANYON_P_SYM).sort((a,b)=>b.length-a.length);
+
+// Formülü parçala: metal kısmı + anyon kısmı
+// Desteklenen formatlar:
+//   NaCl, Fe2O3, CO2, SO3          (basit: MetalNAnyon N)
+//   Al2(SO4)3, Fe(NO3)3            (parantezli: Metal_n(Anyon)_n)
+//   KMnO4, NaHCO3, Na2CrO4        (metal + uzun poliatomik, parantez yok)
+
+function formuldenIsim(f){
+  f = normF(f);
+
+  // ── 1. Parantezli: Metal_n(Anyon)_n ──
+  const mP = f.match(/^([A-Z][a-z]?)(\d*)\(([^)]+)\)(\d+)$/);
+  if(mP){
+    const metSym=mP[1], metN=parseInt(mP[2]||'1');
+    const anySym=mP[3], anyN=parseInt(mP[4]);
+    return bilesikSonuc(metSym, metN, anySym, anyN, true, f);
+  }
+
+  // ── 2. Metal + poliatomik anyon (parantez yok): KMnO4, Na2SO4, NaHCO3 ──
+  // Tüm element sembollerini dene — uzun poliatomik önce
+  for(const elSym of Object.keys(EL)){
+    if(!f.startsWith(elSym)) continue;
+    // Sonrasındaki rakam: metal adedi
+    const sonrasi = f.slice(elSym.length);
+    const rkM = sonrasi.match(/^(\d*)([\s\S]+)$/);
+    if(!rkM) continue;
+    const metN = parseInt(rkM[1]||'1');
+    const kalan = rkM[2];
+    // Kalan kısımda poliatomik anyon ara (uzundan kısaya)
+    for(const anySym of POLI_SEMBOLLER){
+      // kalan = AnySym + anyN
+      if(!kalan.startsWith(anySym)) continue;
+      const sonrakiRak = kalan.slice(anySym.length);
+      const anyN = parseInt(sonrakiRak||'1');
+      // Sadece rakam (veya boş) kalmalı
+      if(sonrakiRak!=='' && !/^\d+$/.test(sonrakiRak)) continue;
+      const r = bilesikSonuc(elSym, metN, anySym, anyN, true, f);
+      if(r) return r;
+    }
+  }
+
+  // ── 3. Basit ikili: NaCl, Fe2O3, CO2 ──
+  const parts = [];
+  const reEl = /([A-Z][a-z]?)(\d*)/g;
+  let m;
+  while((m=reEl.exec(f))!==null){ if(m[1]) parts.push({s:m[1],n:parseInt(m[2]||'1')}); }
+  if(parts.length===2){
+    const [A,B] = parts;
+    const eA=EL[A.s], eB=EL[B.s];
+    if(eA && eB){
+      const ai = ANYON1[B.s];
+      if(ai){
+        const isMetalA = !['ametal','halojen','soy gaz','yari metal'].includes(eA.tur);
+        const fStr = toSub(`${A.s}${A.n>1?A.n:''}${B.s}${B.n>1?B.n:''}`);
+        let isim='';
+        let yuk = eA.yuks[0];
+        if(isMetalA){
+          const hesapYuk = -(ai.yuk*B.n)/A.n;
+          if(Number.isInteger(hesapYuk)) yuk=hesapYuk;
+          const romStr = eA.yuks.length>1?` (${toRoman(yuk)})`:'';
+          isim = `${eA.ad}${romStr} ${ai.ad}`;
+        } else {
+          const PREF=['','mono','di','tri','tetra','penta','heksa','hepta','okta','nona','deka'];
+          const pA = A.n>1?PREF[A.n]:'';
+          let pB = PREF[B.n]||'';
+          if(pB&&pB.slice(-1)==='a'&&['a','e','i','o','u'].includes(ai.ad[0])) pB=pB.slice(0,-1);
+          isim = `${pA}${eA.ad.toLowerCase()} ${pB}${ai.ad}`;
+          isim = isim[0].toUpperCase()+isim.slice(1);
+        }
+        return {tur:'Formül → İsim · İkili Bileşik', ana:isim, alt:`Formül: <b>${fStr}</b>`,
+          formul:`${A.s}${A.n>1?A.n:''}${B.s}${B.n>1?B.n:''}`,
+          metSym:A.s, anySym:B.s, metYuk:yuk,
+          det:[{k:'A Elementi',v:`${A.s} — ${eA.ad}`},{k:'B Elementi',v:`${B.s} — ${eB.ad}`},
+            {k:'Formül',v:fStr},{k:'İsim',v:isim}]};
+      }
+    }
+  }
+  return null;
+}
+
+// Ortak tuz/bileşik sonucu oluştur
+function bilesikSonuc(metSym, metN, anySym, anyN, parantezli, fOrijinal){
+  const el = EL[metSym];
+  const anyAd = ANYON_P_SYM[anySym];
+  if(!el || !anyAd) return null;
+  const anyYuk = ANYON_P[anyAd] ? ANYON_P[anyAd].yuk : -1;
+  const metYuk = -(anyYuk*anyN)/metN;
+  const gercekYuk = Number.isInteger(metYuk) ? metYuk : el.yuks[0];
+  const romStr = el.yuks.length>1 ? ` (${toRoman(gercekYuk)})` : '';
+  const isim = `${el.ad}${romStr} ${anyAd}`;
+  const fStr = parantezli && anyN>1
+    ? toSub(`${metSym}${metN>1?metN:''}(${anySym})${anyN}`)
+    : toSub(`${metSym}${metN>1?metN:''}${anySym}${anyN>1?anyN:''}`);
+  return {
+    tur:'Formül → İsim · Tuz', ana:isim, alt:`Formül: <b>${fStr}</b>`,
+    formul:fOrijinal, metSym, anySym, metYuk:gercekYuk,
+    det:[
+      {k:'Metal', v:`${metSym} — ${el.ad}`},
+      {k:'Anyon',  v:`${anySym} — ${anyAd}`},
+      {k:'Yükseltgenme', v:`+${gercekYuk}`},
+      {k:'Formül', v:fStr},
+      {k:'İsim',   v:isim},
+    ]
+  };
+}
+
+// ══════════════════════════════════════════
+// İSİM → FORMÜL
+// ══════════════════════════════════════════
+function isimdenFormul(raw){
+  const s = raw.toLowerCase().trim();
+
+  // Metal sembolünü bul (parantez öncesi kelime)
+  // Örn: "demir(III) perklorat" → metal="demir", roman="III", anyon="perklorat"
+  // Örn: "sodyum klorür" → metal="sodyum", roman="", anyon="klorür"
+
+  // Regex: metal_adı (roman_rakam) anyon_adı — güvenli, backtracking yok
+  const re1 = /^([a-zçğıöşüâîû]+)\(([ivxIVX]+)\)\s+([a-zçğıöşüâîû\s]+)$/;
+  const re2 = /^([a-zçğıöşüâîû]+)\s+([a-zçğıöşüâîû\s]+)$/;
+
+  let metalAdi='', roman='', anyonAdi='';
+
+  const m1 = s.match(re1);
+  if(m1){ metalAdi=m1[1]; roman=m1[2]; anyonAdi=m1[3].trim(); }
+  else {
+    const m2 = s.match(re2);
+    if(m2){ metalAdi=m2[1]; anyonAdi=m2[2].trim(); }
+    else return null;
+  }
+
+  // Hem direkt hem küçük harfli ara
+  const sym = AD[metalAdi] || AD[metalAdi.toLowerCase()];
+  if(!sym || !EL[sym]) return null;
+  const el = EL[sym];
+  const yuk = roman ? fromRoman(roman) : el.yuks[0];
+
+  // Hidroksit özel durum
+  if(anyonAdi==='hidroksit'){
+    const [mN,ohN] = dengele(yuk,1);
+    const f = mN>1?`${sym}${mN}(OH)${ohN}`:(ohN>1?`${sym}(OH)${ohN}`:`${sym}OH`);
+    const romStr = el.yuks.length>1?` (${toRoman(yuk)})`:'';
+    return {tur:'İsim → Formül · Baz', ana:toSub(f),
+      alt:`İsim: <b>${el.ad}${romStr} hidroksit</b>`, formul:f,
+      metSym:sym, anySym:'OH', metYuk:yuk,
+      det:[{k:'Metal',v:`${sym} — ${el.ad}`},{k:'Yükseltgenme',v:`+${yuk}`},
+        {k:'Formül',v:toSub(f)},{k:'Tür',v:'Hidroksit (Baz)'}]};
+  }
+
+  // Tek atomlu anyon
+  for(const [asym,ai] of Object.entries(ANYON1)){
+    if(ai.ad===anyonAdi){
+      const [mN,aN] = dengele(yuk, Math.abs(ai.yuk));
+      const f = `${sym}${mN>1?mN:''}${asym}${aN>1?aN:''}`;
+      const romStr = el.yuks.length>1?` (${toRoman(yuk)})`:'';
+      return {tur:'İsim → Formül · İkili Bileşik', ana:toSub(f),
+        alt:`İsim: <b>${el.ad}${romStr} ${anyonAdi}</b>`, formul:f,
+        metSym:sym, anySym:asym, metYuk:yuk,
+        det:[{k:'Metal',v:`${sym} — ${el.ad}`},{k:'Anyon',v:`${asym} — ${anyonAdi}`},
+          {k:'Yükseltgenme',v:`+${yuk}`},{k:'Formül',v:toSub(f)}]};
+    }
+  }
+
+  // Poliatomik anyon
+  const pi = ANYON_P[anyonAdi];
+  if(pi){
+    const [mN,aN] = dengele(yuk, Math.abs(pi.yuk));
+    const grup = aN>1?`(${pi.s})${aN}`:pi.s;
+    const f = `${sym}${mN>1?mN:''}${grup}`;
+    const romStr = el.yuks.length>1?` (${toRoman(yuk)})`:'';
+    return {tur:'İsim → Formül · Tuz', ana:toSub(f),
+      alt:`İsim: <b>${el.ad}${romStr} ${anyonAdi}</b>`, formul:f,
+      metSym:sym, anySym:pi.s, metYuk:yuk,
+      det:[{k:'Metal',v:`${sym} — ${el.ad}`},{k:'Anyon',v:`${pi.s} (${anyonAdi})`},
+        {k:'Yükseltgenme',v:`+${yuk}`},{k:'Formül',v:toSub(f)},{k:'Tür',v:'Tuz'}]};
+  }
+
+  return null;
+}
+
+// ══════════════════════════════════════════
+// SONUÇ GÖSTERME
+// ══════════════════════════════════════════
+function kart(k,v,cls=''){
+  return `<div class="kart"><div class="kart-k">${k}</div><div class="kart-v ${cls}">${v}</div></div>`;
+}
+
+function goster(r){
+  document.getElementById('err').style.display='none';
+  document.getElementById('res').style.display='block';
+  document.getElementById('res-tur').textContent = r.tur;
+
+  const ana = document.getElementById('res-ana');
+  const isFormul = r.tur.startsWith('İsim');
+  ana.style.fontFamily = isFormul?"'Space Mono',monospace":"'Bebas Neue',sans-serif";
+  ana.style.fontSize = isFormul?'1.7rem':'2.3rem';
+  ana.innerHTML = r.ana;
+  document.getElementById('res-alt').innerHTML = r.alt||'';
+
+  // Temel kartlar
+  document.getElementById('grid-temel').innerHTML = r.det.map(d=>kart(d.k,d.v)).join('');
+
+  // ── Hesaplanan Özellikler ──
+  const hesap = [];
+
+  // Mol kütlesi
+  const mk = molKutle(r.formul||'');
+  if(mk) hesap.push({k:'Mol Kütlesi',v:`${mk} g/mol`,cls:'y'});
+
+  // Elektron transferi
+  if(r.metSym && r.anySym && r.metYuk){
+    const el = EL[r.metSym];
+    const elAd = el?el.ad:r.metSym;
+    hesap.push({k:'Elektron Veren',v:`${elAd} → +${r.metYuk}`,cls:'g'});
+    hesap.push({k:'Elektron Alan',v:`${r.anySym}`,cls:'o'});
+  }
+
+  // Asit-baz
+  if(r.metSym && r.anySym){
+    const ab = asitBazTahmini(r.metSym, r.anySym);
+    if(ab) hesap.push({k:'Tuz Hidrolizi',v:ab.v,cls:ab.cls});
+  }
+
+  const bH = document.getElementById('bolum-hesap');
+  const gH = document.getElementById('grid-hesap');
+  if(hesap.length>0){
+    bH.style.display='block';
+    gH.innerHTML = hesap.map(d=>kart(d.k,d.v,d.cls||'')).join('');
+  } else { bH.style.display='none'; gH.innerHTML=''; }
+
+  // ── Veritabanı Bilgileri ──
+  const fKey = r.formul||'';
+  const db = DB[fKey];
+  const bD = document.getElementById('bolum-db');
+  const gD = document.getElementById('grid-db');
+  if(db){
+    bD.style.display='block';
+    const cc = db.c==='Çözünür'?'g':db.c==='Çözünmez'?'r':'y';
+    const tc = db.t==='Zararsız'?'g':db.t.includes('Zehirli')||db.t.includes('Kanserojen')?'r':'o';
+    gD.innerHTML =
+      kart('Renk / Görünüm',db.r) +
+      kart('Çözünürlük',db.c,cc) +
+      kart('Kullanım Alanı',db.k) +
+      kart('Tehlike',db.t,tc);
+  } else { bD.style.display='none'; gD.innerHTML=''; }
+}
+
+function hata(msg){
+  document.getElementById('res').style.display='none';
+  document.getElementById('err').style.display='block';
+  document.getElementById('err-m').innerHTML=msg;
+}
+
+function temizle(){
+  document.getElementById('inp').value='';
+  document.getElementById('res').style.display='none';
+  document.getElementById('err').style.display='none';
+}
+
+document.getElementById('inp').addEventListener('keydown', e=>{ if(e.key==='Enter') cevir(); });
+</script>
+</body>
+</html>
